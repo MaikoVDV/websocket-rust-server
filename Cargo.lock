@@ -431,18 +431,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "456c603be3e8d448b072f410900c09faf164fbce2d480456f50eea6e25f9c848"
 
 [[package]]
-name = "rust-websocket-game"
-version = "0.1.0"
-dependencies = [
- "env_logger",
- "futures-util",
- "log",
- "quick-protobuf",
- "tokio",
- "tokio-tungstenite",
-]
-
-[[package]]
 name = "rustix"
 version = "0.36.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -659,6 +647,18 @@ name = "wasi"
 version = "0.11.0+wasi-snapshot-preview1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9c8d87e72b64a3b4db28d11ce29237c246188f4f51057d65a7eab63b7987e423"
+
+[[package]]
+name = "websocket-game-server"
+version = "0.1.0"
+dependencies = [
+ "env_logger",
+ "futures-util",
+ "log",
+ "quick-protobuf",
+ "tokio",
+ "tokio-tungstenite",
+]
 
 [[package]]
 name = "winapi"

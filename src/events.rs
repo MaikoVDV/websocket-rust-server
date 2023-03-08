@@ -1,4 +1,4 @@
-use crate::connection::Connection;
+use crate::networking::connection::Connection;
 use crate::proto::proto_all::*;
 
 #[derive(Debug)]
