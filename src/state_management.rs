@@ -13,3 +13,30 @@ pub fn serialize_state(state: &proto_all::State) -> Vec<u8> {
 
     out
 }
+
+impl Game {
+    pub fn get_state(&self) -> proto_all::State {
+        let mut state = proto_all::State {
+            entities: Vec::new(),
+            bodies: Vec::new(),
+        };
+
+        for (_, entity) in self.players.iter() {
+            state.entities.push(entity.clone());
+        }
+
+        for body in self.bodies.iter() {
+            state.bodies.push(proto_all::Body {
+                id: *body.0,
+                color: body.1.color.to_owned(),
+                x: body.1.x,
+                y: body.1.y,
+                w: body.1.w,
+                h: body.1.h,
+                rotation: body.1.rotation,
+            });
+        }
+
+        return state
+    }
+}

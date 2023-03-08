@@ -3,14 +3,13 @@
 // mod broadcasting;
 mod networking;
 mod events;
-mod game;
-mod game_manager;
+mod gameplay;
 mod proto;
 mod state_management;
 
 // Importing from local modules
-use game::Game;
-use game_manager::run;
+use gameplay::game::Game;
+use gameplay::game_manager::run;
 use proto::proto_all;
 use state_management::serialize_state;
 use events::{BroadcastEvents, GameEvents};

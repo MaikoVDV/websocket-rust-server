@@ -17,7 +17,7 @@ pub async fn listen(
                 let mut msg = msg.into_data();
                 if msg.len() <= 0 {
                     error!("Received a message with a length of 0 or less. Not processing.");
-                    break;
+                    continue;
                 }
                 let header = msg.remove(0);
                 let mut reader = BytesReader::from_bytes(&msg);

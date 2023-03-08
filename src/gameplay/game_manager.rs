@@ -31,18 +31,17 @@ pub fn run(
             if let Some(event) = is_event {
                 match event {
                     GameEvents::Join(conn) => {
-                        //game.add_player(conn.id);
+                        game.add_player(conn.id);
                         let _ = event_sender.send(BroadcastEvents::Join(conn));
                     }
                     GameEvents::Quit(user_id) => {
-                        //game.remove_player(user_id);
+                        game.remove_player(user_id);
                         let _ = event_sender.send(BroadcastEvents::Quit(user_id));
                     }
-                    GameEvents::Input(_id, _input) => { // Params prefixed with underscores to not get warnings. Should be removed when they are finally used.
-                        //game.set_input(id, input);
-                        let new_state = proto_all::State::default(); // SOME ACTUAL STATE STILL NEEDS TO BE SAVED AT SOME POINT IN THE FUTURE!!!
+                    GameEvents::Input(id, input) => {
+                        game.set_input(id, input);
+                        //let new_state = proto_all::State::default(); // SOME ACTUAL STATE STILL NEEDS TO BE SAVED AT SOME POINT IN THE FUTURE!!!
                         //let _ = event_sender.send(BroadcastEvents::StateOut(new_state));
-                        let _ = state_sender.send(new_state);
                     }
                 }
             }
@@ -57,7 +56,8 @@ pub fn run(
             game.update();
 
             // Send the game state to broadcast green thread.
-            //let _ = tx.send(BroadcastEvents::StateOut(game.get_state()));
+            let _ = event_sender.send(BroadcastEvents::StateOut(game.get_state())); // Should prob be removed in favor of the following method.
+            let _ = state_sender.send(game.get_state());
         }
 
         thread::sleep(sixteen_ms);
