@@ -1,7 +1,7 @@
 mod connection;
 mod events;
-mod proto;
 mod game;
+mod proto;
 
 extern crate env_logger;
 use log::*;
@@ -34,8 +34,8 @@ const TIMESTEP: f32 = 1.0 / 60.0; // 60tps server
 #[tokio::main]
 async fn main() {
     _ = env_logger::builder()
-    .filter_level(LevelFilter::Info)
-    .try_init(); // Setting up a logger with timestaps
+        .filter_level(LevelFilter::Info)
+        .try_init(); // Setting up a logger with timestaps
 
     let addr = format!("127.0.0.1:{}", PORT);
 
@@ -74,7 +74,6 @@ async fn main() {
     }
 }
 
-
 // Serialize the game state into bytes Vec<u8> to send through websocket.
 fn serialize_state(state: &proto_all::State) -> Vec<u8> {
     let mut out = Vec::new();
@@ -107,10 +106,10 @@ fn run(tx: UnboundedSender<BroadcastEvents>, mut receiver: UnboundedReceiver<Gam
     loop {
         let start = time::Instant::now();
         /*
-            If we have any game event we process those events and continue to update the game.
-            If we don't have any game event, we do nothing.
-            We do not block here.
-         */
+           If we have any game event we process those events and continue to update the game.
+           If we don't have any game event, we do nothing.
+           We do not block here.
+        */
         while let Some(is_event) = unconstrained(receiver.recv()).now_or_never() {
             if let Some(event) = is_event {
                 match event {
@@ -124,7 +123,10 @@ fn run(tx: UnboundedSender<BroadcastEvents>, mut receiver: UnboundedReceiver<Gam
                     }
                     GameEvents::Input(id, input) => {
                         //game.set_input(id, input);
-                        let _ = tx.send(BroadcastEvents::StateOut(proto_all::State{entities: Vec::new(), bodies: Vec::new()}));
+                        let _ = tx.send(BroadcastEvents::StateOut(proto_all::State {
+                            entities: Vec::new(),
+                            bodies: Vec::new(),
+                        }));
                     }
                 }
             }
@@ -153,7 +155,7 @@ async fn broadcast(mut rx: UnboundedReceiver<BroadcastEvents>) {
 
     // Runs for the entire duration of the server.
     // Code gets executed when an event is received via the rx channel receiver.
-    while let Some(event) = rx.recv().await { 
+    while let Some(event) = rx.recv().await {
         match event {
             BroadcastEvents::Join(conn) => {
                 connections.insert(conn.id, conn);
@@ -166,7 +168,46 @@ async fn broadcast(mut rx: UnboundedReceiver<BroadcastEvents>) {
                 info!("Broadcasting state");
                 for (_, conn) in connections.iter_mut() {
                     let data = serialize_state(&state);
-                    let _ = conn.sender.send(Message::Binary(data)).await.expect("Failed to send.");
+                    let _ = conn
+                        .sender
+                        .send(Message::Binary(data))
+                        .await
+                        .expect("Failed to send.");
+                }
+            }
+        }
+    }
+}
+async fn new_broadcast(mut rx: UnboundedReceiver<BroadcastEvents>) {
+    let mut connections: HashMap<u32, Connection> = HashMap::new();
+    let mut interval = tokio::time::interval(Duration::from_millis(1000));
+    loop {
+        tokio::select! {
+            event = rx.recv() => {
+                match event {
+                    Some(BroadcastEvents::Join(conn)) => {
+                        connections.insert(conn.id, conn);
+                    }
+                    Some(BroadcastEvents::Quit(id)) => {
+                        connections.remove(&id);
+                        info!("Connection lost with client id: {}", id);
+                    }
+                    Some(BroadcastEvents::StateOut(state)) => {
+                    }
+                    None => {
+
+                    }
+                }
+            }
+            _ = interval.tick() => {
+                info!("Tick! Sending state to all clients.");
+                for (_, conn) in connections.iter_mut() {
+                    let data = serialize_state(&state);
+                    let _ = conn
+                        .sender
+                        .send(Message::Binary(data))
+                        .await
+                        .expect("Failed to send.");
                 }
             }
         }
@@ -189,13 +230,16 @@ async fn listen(
                 let mut msg = msg.into_data();
                 if msg.len() <= 0 {
                     info!("Received a message with a length of 0 or less. Not processing.");
-                    break
+                    break;
                 }
                 let header = msg.remove(0);
                 let mut reader = BytesReader::from_bytes(&msg);
                 if header == 0 {
                     if let Ok(input) = proto_all::GameInput::from_reader(&mut reader, &msg) {
-                        println!("Received the following GameInput:\nx: {}, y: {}, pressed: {}", input.x, input.y, input.pressed);
+                        println!(
+                            "Received the following GameInput:\nx: {}, y: {}, pressed: {}",
+                            input.x, input.y, input.pressed
+                        );
                         let _ = game_sender.send(GameEvents::Input(id, input));
                     }
                 }
