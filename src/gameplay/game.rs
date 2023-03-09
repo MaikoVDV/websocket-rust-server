@@ -17,13 +17,12 @@ impl Game {
     pub fn init(&mut self) {
         self.add_cuboid(0.0, WINDOW_HEIGHT - 10.0, WINDOW_WIDTH, 10.0, 0.0);
     }
-    pub fn update(&mut self) {
-        
-    }
-    pub fn set_input(&mut self, id: u32, input: proto_all::GameInput) {
+    pub fn update(&mut self) {}
+    pub fn set_input(&mut self, id: u32, input: proto_all::ClientInput) {
         let mut player = self.players.get_mut(&id).unwrap();
         player.x = input.x;
         player.y = input.y;
         player.pressed = input.pressed;
     }
 }
+

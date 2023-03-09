@@ -2,10 +2,10 @@ use crate::*;
 
 pub async fn interval_broadcast(
     mut event_rx: mpsc::UnboundedReceiver<BroadcastEvents>,
-    state_rx: watch::Receiver<proto_all::State>,
+    state_rx: watch::Receiver<proto_all::GameState>,
 ) {
     let mut connections: HashMap<u32, Connection> = HashMap::new();
-    let mut interval = tokio::time::interval(time::Duration::from_millis(1000/20));
+    let mut interval = tokio::time::interval(time::Duration::from_millis(1000 / 20));
     loop {
         tokio::select! {
             event = event_rx.recv() => {
@@ -23,7 +23,7 @@ pub async fn interval_broadcast(
                         // State will be transmitted on tick.
                     }
                     None => {
-                        
+
                     }
                 }
             }

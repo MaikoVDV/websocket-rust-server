@@ -1,13 +1,12 @@
 use crate::*;
 
-
 /*
 60 FPS fixed game loop.
 Update the internal game state and send it to broadcast green thread without any blocking.
 */
 pub fn run(
     event_sender: mpsc::UnboundedSender<BroadcastEvents>,
-    state_sender: watch::Sender<proto_all::State>,
+    state_sender: watch::Sender<proto_all::GameState>,
     mut receiver: mpsc::UnboundedReceiver<GameEvents>,
 ) {
     // Initialize the game state
@@ -64,3 +63,4 @@ pub fn run(
         dt = start.elapsed().as_secs_f32();
     }
 }
+

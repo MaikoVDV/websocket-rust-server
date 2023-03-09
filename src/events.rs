@@ -5,12 +5,12 @@ use crate::proto::proto_all::*;
 pub enum GameEvents {
     Join(Connection),
     Quit(u32),
-    Input(u32, GameInput),
+    Input(u32, ClientInput),
 }
 
 #[derive(Debug)]
 pub enum BroadcastEvents {
     Join(Connection),
     Quit(u32),
-    StateOut(State),
+    StateOut(GameState),
 }

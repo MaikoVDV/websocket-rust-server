@@ -1,4 +1,4 @@
-use crate::*;
+use crate::{state_management::serialize_client_join, *};
 
 // Listen for incoming data from clients.
 pub async fn listen(
@@ -7,7 +7,13 @@ pub async fn listen(
     id: u32,
 ) {
     let (sender, mut receiver) = ws_stream.split();
-    let conn = Connection::new(id, sender);
+    let mut conn = Connection::new(id, sender);
+    conn.sender
+        .send(Message::binary(serialize_client_join(
+            &proto_all::ClientJoined { client_id: id },
+        )))
+        .await
+        .expect("Failed to send ClientJoined message to client");
 
     let _ = game_sender.send(GameEvents::Join(conn));
     while let Some(msg) = receiver.next().await {
@@ -21,12 +27,12 @@ pub async fn listen(
                 }
                 let header = msg.remove(0);
                 let mut reader = BytesReader::from_bytes(&msg);
-                if header == 0 {
-                    if let Ok(input) = proto_all::GameInput::from_reader(&mut reader, &msg) {
-                        info!(
-                            "Received the following GameInput from client {}:\nx: {}, y: {}, pressed: {}",
-                            id, input.x, input.y, input.pressed
-                        );
+                if header == 1 {
+                    if let Ok(input) = proto_all::ClientInput::from_reader(&mut reader, &msg) {
+                        //info!(
+                        //    "Received the following GameInput from client {}:\nx: {}, y: {}, pressed: {}",
+                        //    id, input.x, input.y, input.pressed
+                        //);
                         let _ = game_sender.send(GameEvents::Input(id, input));
                     }
                 }

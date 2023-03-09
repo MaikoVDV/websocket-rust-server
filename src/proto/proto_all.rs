@@ -9,10 +9,11 @@
 #![cfg_attr(rustfmt, rustfmt_skip)]
 
 
-use quick_protobuf::{MessageRead, MessageWrite, BytesReader, Writer, WriterBackend, Result};
+use quick_protobuf::{MessageInfo, MessageRead, MessageWrite, BytesReader, Writer, WriterBackend, Result};
 use quick_protobuf::sizeofs::*;
 use super::*;
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct Entity {
     pub id: u32,
@@ -60,6 +61,7 @@ impl MessageWrite for Entity {
     }
 }
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct Body {
     pub id: u32,
@@ -115,13 +117,14 @@ impl MessageWrite for Body {
     }
 }
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
-pub struct State {
+pub struct GameState {
     pub entities: Vec<Entity>,
     pub bodies: Vec<Body>,
 }
 
-impl<'a> MessageRead<'a> for State {
+impl<'a> MessageRead<'a> for GameState {
     fn from_reader(r: &mut BytesReader, bytes: &'a [u8]) -> Result<Self> {
         let mut msg = Self::default();
         while !r.is_eof() {
@@ -136,7 +139,7 @@ impl<'a> MessageRead<'a> for State {
     }
 }
 
-impl MessageWrite for State {
+impl MessageWrite for GameState {
     fn get_size(&self) -> usize {
         0
         + self.entities.iter().map(|s| 1 + sizeof_len((s).get_size())).sum::<usize>()
@@ -150,14 +153,15 @@ impl MessageWrite for State {
     }
 }
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
-pub struct GameInput {
+pub struct ClientInput {
     pub x: f32,
     pub y: f32,
     pub pressed: bool,
 }
 
-impl<'a> MessageRead<'a> for GameInput {
+impl<'a> MessageRead<'a> for ClientInput {
     fn from_reader(r: &mut BytesReader, bytes: &'a [u8]) -> Result<Self> {
         let mut msg = Self::default();
         while !r.is_eof() {
@@ -173,7 +177,7 @@ impl<'a> MessageRead<'a> for GameInput {
     }
 }
 
-impl MessageWrite for GameInput {
+impl MessageWrite for ClientInput {
     fn get_size(&self) -> usize {
         0
         + if self.x == 0f32 { 0 } else { 1 + 4 }
@@ -185,6 +189,38 @@ impl MessageWrite for GameInput {
         if self.x != 0f32 { w.write_with_tag(13, |w| w.write_float(*&self.x))?; }
         if self.y != 0f32 { w.write_with_tag(21, |w| w.write_float(*&self.y))?; }
         if self.pressed != false { w.write_with_tag(24, |w| w.write_bool(*&self.pressed))?; }
+        Ok(())
+    }
+}
+
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Debug, Default, PartialEq, Clone)]
+pub struct ClientJoined {
+    pub client_id: u32,
+}
+
+impl<'a> MessageRead<'a> for ClientJoined {
+    fn from_reader(r: &mut BytesReader, bytes: &'a [u8]) -> Result<Self> {
+        let mut msg = Self::default();
+        while !r.is_eof() {
+            match r.next_tag(bytes) {
+                Ok(8) => msg.client_id = r.read_uint32(bytes)?,
+                Ok(t) => { r.read_unknown(bytes, t)?; }
+                Err(e) => return Err(e),
+            }
+        }
+        Ok(msg)
+    }
+}
+
+impl MessageWrite for ClientJoined {
+    fn get_size(&self) -> usize {
+        0
+        + if self.client_id == 0u32 { 0 } else { 1 + sizeof_varint(*(&self.client_id) as u64) }
+    }
+
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
+        if self.client_id != 0u32 { w.write_with_tag(8, |w| w.write_uint32(*&self.client_id))?; }
         Ok(())
     }
 }

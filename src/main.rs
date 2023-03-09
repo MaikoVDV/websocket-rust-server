@@ -1,24 +1,20 @@
 // Importing local modules
 // mod networking::connection;
 // mod broadcasting;
-mod networking;
 mod events;
 mod gameplay;
+mod networking;
 mod proto;
 mod state_management;
 
 // Importing from local modules
+use events::{BroadcastEvents, GameEvents};
 use gameplay::game::Game;
 use gameplay::game_manager::run;
 use proto::proto_all;
 use state_management::serialize_state;
-use events::{BroadcastEvents, GameEvents};
 
-use networking::{
-    connection::Connection,
-    broadcasting::interval_broadcast,
-    listening::listen,
-};
+use networking::{broadcasting::interval_broadcast, connection::Connection, listening::listen};
 
 // Logging
 extern crate env_logger;
@@ -26,28 +22,19 @@ use log::*;
 
 // Networking & Multithreading (tokio)
 use tokio::net::{TcpListener, TcpStream};
-use tokio::sync::{
-    mpsc,
-    watch,
-};
+use tokio::sync::{mpsc, watch};
 use tokio::task::unconstrained;
 use tokio_tungstenite::tungstenite::Message;
 use tokio_tungstenite::WebSocketStream;
 
-use quick_protobuf::{BytesReader, Writer, MessageRead};
+use quick_protobuf::{BytesReader, MessageRead, Writer};
 
 // Futures
 use futures_util::stream::StreamExt;
 use futures_util::{FutureExt, SinkExt};
 
-
 // Standard Library imports
-use std::{
-    thread,
-    time,
-    collections::HashMap,
-};
-
+use std::{collections::HashMap, thread, time};
 
 const PORT: &str = "8080";
 const TIMESTEP: f32 = 1.0 / 60.0; // 60tps server
@@ -74,7 +61,8 @@ async fn main() {
         and join&quit events into this function.
     */
     let (broadcast_sender, broadcast_receiver) = mpsc::unbounded_channel::<BroadcastEvents>();
-    let (state_sender, state_receiver) = watch::channel::<proto_all::State>(proto_all::State::default());
+    let (state_sender, state_receiver) =
+        watch::channel::<proto_all::GameState>(proto_all::GameState::default());
     tokio::spawn(interval_broadcast(broadcast_receiver, state_receiver));
     /*
         Since I will only use one game loop, I'm using an actual std::thread for the game loop.
@@ -99,3 +87,4 @@ async fn main() {
         }
     }
 }
+
