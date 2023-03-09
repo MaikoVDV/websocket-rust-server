@@ -1,21 +1,15 @@
-use crate::{state_management::serialize_client_join, *};
+use crate::*;
 
 // Listen for incoming data from clients.
 pub async fn listen(
-    game_sender: mpsc::UnboundedSender<GameEvents>,
+    event_sender: mpsc::UnboundedSender<GameEvents>,
     ws_stream: WebSocketStream<TcpStream>,
     id: u32,
 ) {
     let (sender, mut receiver) = ws_stream.split();
-    let mut conn = Connection::new(id, sender);
-    conn.sender
-        .send(Message::binary(serialize_client_join(
-            &proto_all::ClientJoined { client_id: id },
-        )))
-        .await
-        .expect("Failed to send ClientJoined message to client");
+    let conn = Connection::new(id, sender);
 
-    let _ = game_sender.send(GameEvents::Join(conn));
+    let _ = event_sender.send(GameEvents::Join(conn));
     while let Some(msg) = receiver.next().await {
         if let Ok(msg) = msg {
             if msg.is_binary() {
@@ -33,7 +27,7 @@ pub async fn listen(
                         //    "Received the following GameInput from client {}:\nx: {}, y: {}, pressed: {}",
                         //    id, input.x, input.y, input.pressed
                         //);
-                        let _ = game_sender.send(GameEvents::Input(id, input));
+                        let _ = event_sender.send(GameEvents::Input(id, input));
                     }
                 }
             } else if msg.is_close() {
@@ -46,5 +40,5 @@ pub async fn listen(
     // If we reach here, it means the client got disconnected.
     // Send quit event to game loop, and the game loop will send quit event to the broadcast thread.
     // So all cleanups will be done.
-    game_sender.send(GameEvents::Quit(id)).unwrap();
+    event_sender.send(GameEvents::Quit(id)).expect("Failed to send GameEvents::Quit(id)");
 }

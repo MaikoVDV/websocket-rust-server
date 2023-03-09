@@ -18,3 +18,17 @@ tokio-tungstenite = {version = "0.15.0", default-features = false}
 quick-protobuf = {git="https://github.com/Descrout/quick-protobuf"}
 env_logger = "0.10.0"
 log = "0.4.17"
+
+[build-dependencies]
+pb-rs = "0.10.0"
+walkdir = "2.3.2"
+
+# Do little optimization on code in this project, as recompiling it takes very long.
+# When building for production, optimization is done.
+[profile.dev]
+opt-level = 1
+
+# Do a lot of optimization on packages, even in dev mode. Packages do not need to be
+# recompiled, so optimization is worth it.
+[profile.dev.package."*"]
+opt-level = 3

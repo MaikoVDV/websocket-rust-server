@@ -18,16 +18,29 @@ message Body {
   float rotation = 7;
 }
 
+// Sent when a client connects to the server. Contains all world data.
+// Header 0
 message GameState {
   repeated Entity entities = 1;
   repeated Body bodies = 2;
 }
 
+
+// Sent by a client to the server when they make an input.
+// Header 1
 message ClientInput {
   float x = 1;
   float y = 2;
   bool pressed = 3;
 }
+// Sent to all clients when a new client joins.
+// Header 2
 message ClientJoined {
   uint32 client_id = 1;
+}
+// Sent periodically by the server to all clients. Contains any changes to the GameWorld since last broadcast.
+// Header 3
+message GameStateUpdate {
+  repeated Entity entities = 1;
+  repeated Body bodies = 2;
 }

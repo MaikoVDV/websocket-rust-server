@@ -3,7 +3,7 @@ Messages sent through the websocket start with an integer. That specifies the he
 Various kinds of messages can be send through the socket. The header indicates what the message is.
 
 0:
-Message contains gamestate. Sent from the server to all clients every tick.
+Message contains GameState. Sent from the server when a client joins.
 
 1:
 Message contains GameInput. Sent from a client to the server. GameInput can change the state.
@@ -11,3 +11,7 @@ Message contains GameInput. Sent from a client to the server. GameInput can chan
 2:
 Message contains ClientJoin. Sent from the server to a client upon connection.
 Contains a single u32, the client's id.
+
+3:
+Message contains GameStateUpdate. Sent by the server to all clients every tick.
+Contains changes in GameState.

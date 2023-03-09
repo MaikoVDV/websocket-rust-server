@@ -5,14 +5,16 @@ mod events;
 mod gameplay;
 mod networking;
 mod proto;
-mod state_management;
 
 // Importing from local modules
 use events::{BroadcastEvents, GameEvents};
-use gameplay::game::Game;
-use gameplay::game_manager::run;
+use gameplay::{
+    game::Game,
+    game_manager::run,
+};
 use proto::proto_all;
-use state_management::serialize_state;
+//use networking::serialization::{serialize_state, serialize_client_join};
+use networking::serialization::proto_serialize;
 
 use networking::{broadcasting::interval_broadcast, connection::Connection, listening::listen};
 
@@ -37,7 +39,7 @@ use futures_util::{FutureExt, SinkExt};
 use std::{collections::HashMap, thread, time};
 
 const PORT: &str = "8080";
-const TIMESTEP: f32 = 1.0 / 60.0; // 60tps server
+const TICKS_PER_SECOND: u64 = 20; // 20tps gameloop & broadcasting
 
 #[tokio::main]
 async fn main() {
@@ -55,21 +57,22 @@ async fn main() {
         .await
         .expect("Listening to TCP failed.");
 
+    let (game_tick_sender, game_tick_receiver) = watch::channel::<u8>(0); // Useful for monitoring ticks. The data means nothing.
     /*
         Broadcast data to all clients in a seperate async tokio green thread.
         The game loop will use 'broadcast_sender' to send the game state,
         and join&quit events into this function.
     */
     let (broadcast_sender, broadcast_receiver) = mpsc::unbounded_channel::<BroadcastEvents>();
-    let (state_sender, state_receiver) =
-        watch::channel::<proto_all::GameState>(proto_all::GameState::default());
-    tokio::spawn(interval_broadcast(broadcast_receiver, state_receiver));
+    let (state_update_sender, state_update_receiver) =
+        watch::channel::<proto_all::GameStateUpdate>(proto_all::GameStateUpdate::default());
+    tokio::spawn(interval_broadcast(broadcast_receiver, state_update_receiver, game_tick_receiver));
     /*
         Since I will only use one game loop, I'm using an actual std::thread for the game loop.
         This function takes ownership of the 'broadcast_sender' to send events into the 'broadcast' green thread.
     */
     let (game_sender, game_receiver) = mpsc::unbounded_channel::<GameEvents>();
-    thread::spawn(move || run(broadcast_sender, state_sender, game_receiver));
+    tokio::spawn(run(broadcast_sender, state_update_sender, game_receiver, game_tick_sender));
     info!("Listening on port {}", PORT);
 
     // A counter to use as client ids.
