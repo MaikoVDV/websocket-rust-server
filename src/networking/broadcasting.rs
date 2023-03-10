@@ -1,18 +1,16 @@
 use crate::*;
 
-pub async fn interval_broadcast(
-    mut event_rx: mpsc::UnboundedReceiver<BroadcastEvents>,
-    state_update_rx: watch::Receiver<proto_all::GameStateUpdate>,
-    tick_receiver: watch::Receiver<u8>,
-) {
+pub async fn interval_broadcast(mut event_rx: mpsc::UnboundedReceiver<BroadcastEvents>) {
     let mut connections: HashMap<u32, Connection> = HashMap::new();
-    let mut interval = tokio::time::interval(time::Duration::from_millis(1000 / 20));
     loop {
         tokio::select! {
             event = event_rx.recv() => {
                 match event {
-                    Some(BroadcastEvents::Join(new_client)) => {
+                    Some(BroadcastEvents::Join(mut new_client, full_game_state)) => {
                         let new_client_id = new_client.id;
+                        new_client.sender.send( // Sending the full state to the client
+                            Message::binary(proto_serialize(full_game_state, 0))).await.expect("Failed to send full state to a client on Join.");
+
                         connections.insert(new_client_id, new_client);
                         // Send the id of the new client to all other clients
                         for (_, conn) in connections.iter_mut() {
@@ -29,7 +27,10 @@ pub async fn interval_broadcast(
                         connections.remove(&id);
                         info!("Connection lost with client id: {}", id);
                     }
-                    Some(BroadcastEvents::StateOut(state)) => {
+                    Some(BroadcastEvents::StateOut(_state)) => {
+
+                    }
+                    Some(BroadcastEvents::StateUpdateOut(state)) => {
                         // Received an input from some client,
                         // But not broadcasting state, because that's not very nice for performance.
                         // State will be transmitted on tick.

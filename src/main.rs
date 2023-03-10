@@ -8,10 +8,7 @@ mod proto;
 
 // Importing from local modules
 use events::{BroadcastEvents, GameEvents};
-use gameplay::{
-    game::Game,
-    game_manager::run,
-};
+use gameplay::{game::Game, game_manager::run};
 use proto::proto_all;
 //use networking::serialization::{serialize_state, serialize_client_join};
 use networking::serialization::proto_serialize;
@@ -25,7 +22,6 @@ use log::*;
 // Networking & Multithreading (tokio)
 use tokio::net::{TcpListener, TcpStream};
 use tokio::sync::{mpsc, watch};
-use tokio::task::unconstrained;
 use tokio_tungstenite::tungstenite::Message;
 use tokio_tungstenite::WebSocketStream;
 
@@ -57,22 +53,19 @@ async fn main() {
         .await
         .expect("Listening to TCP failed.");
 
-    let (game_tick_sender, game_tick_receiver) = watch::channel::<u8>(0); // Useful for monitoring ticks. The data means nothing.
     /*
         Broadcast data to all clients in a seperate async tokio green thread.
         The game loop will use 'broadcast_sender' to send the game state,
         and join&quit events into this function.
     */
     let (broadcast_sender, broadcast_receiver) = mpsc::unbounded_channel::<BroadcastEvents>();
-    let (state_update_sender, state_update_receiver) =
-        watch::channel::<proto_all::GameStateUpdate>(proto_all::GameStateUpdate::default());
-    tokio::spawn(interval_broadcast(broadcast_receiver, state_update_receiver, game_tick_receiver));
+    tokio::spawn(interval_broadcast(broadcast_receiver));
     /*
         Since I will only use one game loop, I'm using an actual std::thread for the game loop.
         This function takes ownership of the 'broadcast_sender' to send events into the 'broadcast' green thread.
     */
     let (game_sender, game_receiver) = mpsc::unbounded_channel::<GameEvents>();
-    tokio::spawn(run(broadcast_sender, state_update_sender, game_receiver, game_tick_sender));
+    tokio::spawn(run(broadcast_sender, game_receiver));
     info!("Listening on port {}", PORT);
 
     // A counter to use as client ids.
@@ -90,4 +83,3 @@ async fn main() {
         }
     }
 }
-

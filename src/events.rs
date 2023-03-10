@@ -10,7 +10,8 @@ pub enum GameEvents {
 
 #[derive(Debug)]
 pub enum BroadcastEvents {
-    Join(Connection),
+    Join(Connection, GameState),
     Quit(u32),
     StateOut(GameState),
+    StateUpdateOut(GameStateUpdate),
 }
