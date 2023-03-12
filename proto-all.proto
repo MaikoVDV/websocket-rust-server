@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-message Entity {
+message Player {
   uint32 id = 1;
   float x = 2;
   float y = 3;
@@ -21,7 +21,7 @@ message Body {
 // Sent when a client connects to the server. Contains all world data.
 // Header 0
 message GameState {
-  repeated Entity entities = 1;
+  repeated Player players = 1;
   repeated Body bodies = 2;
 }
 
@@ -41,6 +41,6 @@ message ClientJoined {
 // Sent periodically by the server to all clients. Contains any changes to the GameWorld since last broadcast.
 // Header 3
 message GameStateUpdate {
-  repeated Entity entities = 1;
+  repeated Player players = 1;
   repeated Body bodies = 2;
 }

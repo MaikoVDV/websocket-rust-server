@@ -4,7 +4,7 @@ impl Game {
     pub fn add_player(&mut self, id: u32) {
         self.players.insert(
             id,
-            proto_all::Entity {
+            proto_all::Player {
                 id: id,
                 x: 0.0,
                 y: 0.0,

@@ -15,7 +15,7 @@ use super::*;
 
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
-pub struct Entity {
+pub struct Player {
     pub id: u32,
     pub x: f32,
     pub y: f32,
@@ -23,7 +23,7 @@ pub struct Entity {
     pub color: String,
 }
 
-impl<'a> MessageRead<'a> for Entity {
+impl<'a> MessageRead<'a> for Player {
     fn from_reader(r: &mut BytesReader, bytes: &'a [u8]) -> Result<Self> {
         let mut msg = Self::default();
         while !r.is_eof() {
@@ -41,7 +41,7 @@ impl<'a> MessageRead<'a> for Entity {
     }
 }
 
-impl MessageWrite for Entity {
+impl MessageWrite for Player {
     fn get_size(&self) -> usize {
         0
         + if self.id == 0u32 { 0 } else { 1 + sizeof_varint(*(&self.id) as u64) }
@@ -120,7 +120,7 @@ impl MessageWrite for Body {
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct GameState {
-    pub entities: Vec<Entity>,
+    pub players: Vec<Player>,
     pub bodies: Vec<Body>,
 }
 
@@ -129,7 +129,7 @@ impl<'a> MessageRead<'a> for GameState {
         let mut msg = Self::default();
         while !r.is_eof() {
             match r.next_tag(bytes) {
-                Ok(10) => msg.entities.push(r.read_message::<Entity>(bytes)?),
+                Ok(10) => msg.players.push(r.read_message::<Player>(bytes)?),
                 Ok(18) => msg.bodies.push(r.read_message::<Body>(bytes)?),
                 Ok(t) => { r.read_unknown(bytes, t)?; }
                 Err(e) => return Err(e),
@@ -142,12 +142,12 @@ impl<'a> MessageRead<'a> for GameState {
 impl MessageWrite for GameState {
     fn get_size(&self) -> usize {
         0
-        + self.entities.iter().map(|s| 1 + sizeof_len((s).get_size())).sum::<usize>()
+        + self.players.iter().map(|s| 1 + sizeof_len((s).get_size())).sum::<usize>()
         + self.bodies.iter().map(|s| 1 + sizeof_len((s).get_size())).sum::<usize>()
     }
 
     fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
-        for s in &self.entities { w.write_with_tag(10, |w| w.write_message(s))?; }
+        for s in &self.players { w.write_with_tag(10, |w| w.write_message(s))?; }
         for s in &self.bodies { w.write_with_tag(18, |w| w.write_message(s))?; }
         Ok(())
     }
@@ -228,7 +228,7 @@ impl MessageWrite for ClientJoined {
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct GameStateUpdate {
-    pub entities: Vec<Entity>,
+    pub players: Vec<Player>,
     pub bodies: Vec<Body>,
 }
 
@@ -237,7 +237,7 @@ impl<'a> MessageRead<'a> for GameStateUpdate {
         let mut msg = Self::default();
         while !r.is_eof() {
             match r.next_tag(bytes) {
-                Ok(10) => msg.entities.push(r.read_message::<Entity>(bytes)?),
+                Ok(10) => msg.players.push(r.read_message::<Player>(bytes)?),
                 Ok(18) => msg.bodies.push(r.read_message::<Body>(bytes)?),
                 Ok(t) => { r.read_unknown(bytes, t)?; }
                 Err(e) => return Err(e),
@@ -250,12 +250,12 @@ impl<'a> MessageRead<'a> for GameStateUpdate {
 impl MessageWrite for GameStateUpdate {
     fn get_size(&self) -> usize {
         0
-        + self.entities.iter().map(|s| 1 + sizeof_len((s).get_size())).sum::<usize>()
+        + self.players.iter().map(|s| 1 + sizeof_len((s).get_size())).sum::<usize>()
         + self.bodies.iter().map(|s| 1 + sizeof_len((s).get_size())).sum::<usize>()
     }
 
     fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
-        for s in &self.entities { w.write_with_tag(10, |w| w.write_message(s))?; }
+        for s in &self.players { w.write_with_tag(10, |w| w.write_message(s))?; }
         for s in &self.bodies { w.write_with_tag(18, |w| w.write_message(s))?; }
         Ok(())
     }

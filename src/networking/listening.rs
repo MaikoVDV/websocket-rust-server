@@ -23,10 +23,10 @@ pub async fn listen(
                 let mut reader = BytesReader::from_bytes(&msg);
                 if header == 1 {
                     if let Ok(input) = proto_all::ClientInput::from_reader(&mut reader, &msg) {
-                        //info!(
-                        //    "Received the following GameInput from client {}:\nx: {}, y: {}, pressed: {}",
-                        //    id, input.x, input.y, input.pressed
-                        //);
+                        info!(
+                           "Received the following GameInput from client {}:\nx: {}, y: {}, pressed: {}",
+                           id, input.x, input.y, input.pressed
+                        );
                         let _ = event_sender.send(GameEvents::Input(id, input));
                     }
                 }

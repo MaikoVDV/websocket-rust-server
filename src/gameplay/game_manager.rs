@@ -24,7 +24,7 @@ pub async fn run(
                             let _ = broadcast_event_sender.send(
                                 BroadcastEvents::Join(conn, proto_all::GameState {
                                     // Converting entities & bodies from HashMap to Vec<>
-                                    entities: game.players.values().cloned().collect(),
+                                    players: game.players.values().cloned().collect(),
                                     bodies: game.bodies.values().cloned().collect(),
                                 }));
                         }

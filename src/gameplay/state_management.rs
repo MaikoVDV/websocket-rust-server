@@ -3,12 +3,12 @@ use crate::*;
 impl Game {
     pub fn get_state(&self) -> proto_all::GameState {
         let mut state = proto_all::GameState {
-            entities: Vec::new(),
+            players: Vec::new(),
             bodies: Vec::new(),
         };
 
         for (_, entity) in self.players.iter() {
-            state.entities.push(entity.clone());
+            state.players.push(entity.clone());
         }
 
         for body in self.bodies.iter() {
@@ -27,12 +27,12 @@ impl Game {
     }
     pub fn get_state_updates(&self) -> proto_all::GameStateUpdate {
         let mut state = proto_all::GameStateUpdate {
-            entities: Vec::new(),
+            players: Vec::new(),
             bodies: Vec::new(),
         };
 
         for (_, entity) in self.game_state_updates.players.iter() {
-            state.entities.push(entity.clone());
+            state.players.push(entity.clone());
         }
 
         for body in self.game_state_updates.bodies.iter() {

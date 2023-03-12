@@ -4,7 +4,7 @@ const WINDOW_WIDTH: f32 = 640.0;
 const WINDOW_HEIGHT: f32 = 360.0;
 
 pub struct Game {
-    pub players: HashMap<u32, proto_all::Entity>,
+    pub players: HashMap<u32, proto_all::Player>,
     pub bodies: HashMap<u32, proto_all::Body>, // Stored as just a vector in the tutorial. But thats cring.
     pub game_state_updates: GameUpdate,
 }
@@ -39,7 +39,7 @@ impl Game {
 }
 // Stores changes in state. Resets after it has been broadcasted to clients.
 pub struct GameUpdate {
-    pub players: HashMap<u32, proto_all::Entity>,
+    pub players: HashMap<u32, proto_all::Player>,
     pub bodies: HashMap<u32, proto_all::Body>, // Stored as just a vector in the tutorial. But thats cring.
 }
 impl GameUpdate {

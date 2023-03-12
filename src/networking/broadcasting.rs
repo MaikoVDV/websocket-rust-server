@@ -36,6 +36,7 @@ pub async fn interval_broadcast(mut event_rx: mpsc::UnboundedReceiver<BroadcastE
                         // State will be transmitted on tick.
                         let data = proto_serialize(state, 3);
                         for (_, conn) in connections.iter_mut() {
+                            //info!("Sending state update to client {}", conn.id);
                             let _ = conn
                                 .sender
                                 .send(Message::Binary(data.clone()))
@@ -48,18 +49,6 @@ pub async fn interval_broadcast(mut event_rx: mpsc::UnboundedReceiver<BroadcastE
                     }
                 }
             }
-            // _ = interval.tick() => {
-            //     let data = proto_serialize(state_update_rx.borrow().to_owned(), 3);
-            //     for (_, conn) in connections.iter_mut() {
-            //         let _ = conn
-            //             .sender
-            //             .send(Message::Binary(data.clone()))
-            //             .await
-            //             .unwrap_or_default();
-            //     }
-            //     // When state updates have been sent to all clients, reset the state update struct.
-            //     // want to do game.reset().
-            // }
         }
     }
 }
