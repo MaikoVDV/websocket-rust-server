@@ -21,12 +21,16 @@ pub async fn run(
                     match event {
                         GameEvents::Join(conn) => {
                             game.add_player(conn.id);
-                            let _ = broadcast_event_sender.send(
-                                BroadcastEvents::Join(conn, proto_all::GameState {
+                            let initial_state_message = proto_all::InitialState {
+                                client_id: conn.id,
+                                full_state: Some(proto_all::GameStateUpdate {
                                     // Converting entities & bodies from HashMap to Vec<>
                                     players: game.players.values().cloned().collect(),
                                     bodies: game.bodies.values().cloned().collect(),
-                                }));
+                                })
+                            };
+                            let _ = broadcast_event_sender.send(
+                                BroadcastEvents::Join(conn, initial_state_message));
                         }
                         GameEvents::Quit(user_id) => {
                             game.remove_player(user_id);

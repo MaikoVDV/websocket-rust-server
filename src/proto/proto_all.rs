@@ -261,3 +261,39 @@ impl MessageWrite for GameStateUpdate {
     }
 }
 
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Debug, Default, PartialEq, Clone)]
+pub struct InitialState {
+    pub client_id: u32,
+    pub full_state: Option<GameStateUpdate>,
+}
+
+impl<'a> MessageRead<'a> for InitialState {
+    fn from_reader(r: &mut BytesReader, bytes: &'a [u8]) -> Result<Self> {
+        let mut msg = Self::default();
+        while !r.is_eof() {
+            match r.next_tag(bytes) {
+                Ok(8) => msg.client_id = r.read_uint32(bytes)?,
+                Ok(18) => msg.full_state = Some(r.read_message::<GameStateUpdate>(bytes)?),
+                Ok(t) => { r.read_unknown(bytes, t)?; }
+                Err(e) => return Err(e),
+            }
+        }
+        Ok(msg)
+    }
+}
+
+impl MessageWrite for InitialState {
+    fn get_size(&self) -> usize {
+        0
+        + if self.client_id == 0u32 { 0 } else { 1 + sizeof_varint(*(&self.client_id) as u64) }
+        + self.full_state.as_ref().map_or(0, |m| 1 + sizeof_len((m).get_size()))
+    }
+
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
+        if self.client_id != 0u32 { w.write_with_tag(8, |w| w.write_uint32(*&self.client_id))?; }
+        if let Some(ref s) = self.full_state { w.write_with_tag(18, |w| w.write_message(s))?; }
+        Ok(())
+    }
+}
+

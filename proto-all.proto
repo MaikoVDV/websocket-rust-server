@@ -38,9 +38,18 @@ message ClientInput {
 message ClientJoined {
   uint32 client_id = 1;
 }
-// Sent periodically by the server to all clients. Contains any changes to the GameWorld since last broadcast.
+// Sent periodically by the server to all clients.
+// Contains any changes to the GameWorld since last broadcast.
 // Header 3
 message GameStateUpdate {
   repeated Player players = 1;
   repeated Body bodies = 2;
+}
+
+// Sent to a client when it joins.
+// Contains the full game state and the client id assigned by the server
+// Header 4
+message InitialState {
+  uint32 client_id = 1;
+  GameStateUpdate full_state = 2;
 }

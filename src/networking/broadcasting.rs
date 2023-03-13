@@ -8,8 +8,10 @@ pub async fn interval_broadcast(mut event_rx: mpsc::UnboundedReceiver<BroadcastE
                 match event {
                     Some(BroadcastEvents::Join(mut new_client, full_game_state)) => {
                         let new_client_id = new_client.id;
+                        info!("A new client has joined the game. Sending their client_id ({}) with the full game state", new_client_id);
                         new_client.sender.send( // Sending the full state to the client
-                            Message::binary(proto_serialize(full_game_state, 0))).await.expect("Failed to send full state to a client on Join.");
+                            Message::binary(proto_serialize(full_game_state, 4)))
+                                .await.expect("Failed to send full state to a client on Join.");
 
                         connections.insert(new_client_id, new_client);
                         // Send the id of the new client to all other clients

@@ -15,3 +15,7 @@ Contains a single u32, the client's id.
 3:
 Message contains GameStateUpdate. Sent by the server to all clients every tick.
 Contains changes in GameState.
+
+4:
+Message contains InitialState. Sent once to a client, when they join.
+Contains their client_id and the full current state stored in a GameStateUpdate.
