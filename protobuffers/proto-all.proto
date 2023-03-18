@@ -25,7 +25,6 @@ message GameState {
   repeated Body bodies = 2;
 }
 
-
 // Sent by a client to the server when they make an input.
 // Header 1
 message ClientInput {

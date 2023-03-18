@@ -5,7 +5,7 @@ use walkdir::WalkDir;
 fn main() {
     let out_dir = PathBuf::from("src/proto");
 
-    let in_dir = PathBuf::from(::std::env::var("CARGO_MANIFEST_DIR").unwrap());
+    let in_dir = PathBuf::from(::std::env::var("CARGO_MANIFEST_DIR").unwrap()).join("protobuffers");
     // Re-run this build.rs if the protos dir changes (i.e. a new file is added)
     println!("cargo:rerun-if-changed={}", in_dir.to_str().unwrap());
 
