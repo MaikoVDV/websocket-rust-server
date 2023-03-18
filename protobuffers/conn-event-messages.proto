@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+import "generic-protobufs.proto";
+
+// Sent to all clients when a new client joins.
+message ClientConnect {
+    uint32 client_id = 1;
+}
+
+message ClientDisconnect {
+    uint32 client_id = 1;
+}

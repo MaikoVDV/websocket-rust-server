@@ -9,8 +9,7 @@ mod proto;
 // Importing from local modules
 use events::{BroadcastEvents, GameEvents};
 use gameplay::{game::Game, game_manager::run};
-use proto::proto_all;
-//use networking::serialization::{serialize_state, serialize_client_join};
+use proto::*;
 use networking::serialization::proto_serialize;
 
 use networking::{broadcasting::interval_broadcast, connection::Connection, listening::listen};

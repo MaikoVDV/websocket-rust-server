@@ -1,8 +1,8 @@
 use crate::*;
 
 impl Game {
-    pub fn get_state(&self) -> proto_all::GameState {
-        let mut state = proto_all::GameState {
+    pub fn get_state(&self) -> state_messages::GameStateUpdate {
+        let mut state = state_messages::GameStateUpdate {
             players: Vec::new(),
             bodies: Vec::new(),
         };
@@ -12,7 +12,7 @@ impl Game {
         }
 
         for body in self.bodies.iter() {
-            state.bodies.push(proto_all::Body {
+            state.bodies.push(generic_protobufs::Body {
                 id: *body.0,
                 color: body.1.color.to_owned(),
                 x: body.1.x,
@@ -25,8 +25,8 @@ impl Game {
 
         return state;
     }
-    pub fn get_state_updates(&self) -> proto_all::GameStateUpdate {
-        let mut state = proto_all::GameStateUpdate {
+    pub fn get_state_updates(&self) -> state_messages::GameStateUpdate {
+        let mut state = state_messages::GameStateUpdate {
             players: Vec::new(),
             bodies: Vec::new(),
         };
@@ -36,7 +36,7 @@ impl Game {
         }
 
         for body in self.game_state_updates.bodies.iter() {
-            state.bodies.push(proto_all::Body {
+            state.bodies.push(generic_protobufs::Body {
                 id: *body.0,
                 color: body.1.color.to_owned(),
                 x: body.1.x,

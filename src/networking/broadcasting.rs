@@ -6,17 +6,17 @@ pub async fn interval_broadcast(mut event_rx: mpsc::UnboundedReceiver<BroadcastE
         tokio::select! {
             event = event_rx.recv() => {
                 match event {
-                    Some(BroadcastEvents::Join(mut new_client, full_game_state)) => {
+                    Some(BroadcastEvents::Join(mut new_client, initial_state_message)) => {
                         let new_client_id = new_client.id;
                         info!("A new client has joined the game. Sending their client_id ({}) with the full game state", new_client_id);
                         new_client.sender.send( // Sending the full state to the client
-                            Message::binary(proto_serialize(full_game_state, 4)))
+                            Message::binary(proto_serialize(initial_state_message, 11)))
                                 .await.expect("Failed to send full state to a client on Join.");
 
                         connections.insert(new_client_id, new_client);
                         // Send the id of the new client to all other clients
                         for (_, conn) in connections.iter_mut() {
-                            let data = proto_serialize(proto_all::ClientJoined { client_id:  new_client_id}.to_owned(), 2);
+                            let data = proto_serialize(conn_event_messages::ClientConnect { client_id:  new_client_id}.to_owned(), 0);
 
                             let _ = conn
                                 .sender
@@ -29,14 +29,11 @@ pub async fn interval_broadcast(mut event_rx: mpsc::UnboundedReceiver<BroadcastE
                         connections.remove(&id);
                         info!("Connection lost with client id: {}", id);
                     }
-                    Some(BroadcastEvents::StateOut(_state)) => {
-
-                    }
                     Some(BroadcastEvents::StateUpdateOut(state)) => {
                         // Received an input from some client,
                         // But not broadcasting state, because that's not very nice for performance.
                         // State will be transmitted on tick.
-                        let data = proto_serialize(state, 3);
+                        let data = proto_serialize(state, 10);
                         for (_, conn) in connections.iter_mut() {
                             //info!("Sending state update to client {}", conn.id);
                             let _ = conn

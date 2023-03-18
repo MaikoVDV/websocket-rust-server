@@ -22,7 +22,7 @@ pub async fn listen(
                 let header = msg.remove(0);
                 let mut reader = BytesReader::from_bytes(&msg);
                 if header == 1 {
-                    if let Ok(input) = proto_all::ClientInput::from_reader(&mut reader, &msg) {
+                    if let Ok(input) = generic_protobufs::ClientInput::from_reader(&mut reader, &msg) {
                         info!(
                            "Received the following GameInput from client {}:\nx: {}, y: {}, pressed: {}",
                            id, input.x, input.y, input.pressed

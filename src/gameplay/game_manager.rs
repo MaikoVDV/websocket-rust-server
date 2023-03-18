@@ -21,9 +21,9 @@ pub async fn run(
                     match event {
                         GameEvents::Join(conn) => {
                             game.add_player(conn.id);
-                            let initial_state_message = proto_all::InitialState {
+                            let initial_state_message = state_messages::InitialState {
                                 client_id: conn.id,
-                                full_state: Some(proto_all::GameStateUpdate {
+                                full_state: Some(state_messages::GameStateUpdate {
                                     // Converting entities & bodies from HashMap to Vec<>
                                     players: game.players.values().cloned().collect(),
                                     bodies: game.bodies.values().cloned().collect(),

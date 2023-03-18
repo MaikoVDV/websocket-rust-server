@@ -4,7 +4,7 @@ impl Game {
     pub fn add_player(&mut self, id: u32) {
         self.players.insert(
             id,
-            proto_all::Player {
+            generic_protobufs::Player {
                 id: id,
                 x: 0.0,
                 y: 0.0,
@@ -21,7 +21,7 @@ impl Game {
     pub fn add_cuboid(&mut self, x: f32, y: f32, w: f32, h: f32, rotation: f32) {
         let id: u32 = self.bodies.len() as u32; // IDs just count.
 
-        self.bodies.insert(id, proto_all::Body {
+        self.bodies.insert(id, generic_protobufs::Body {
             id: id,
             color: String::from("1cdb2f"),
             x: x,
