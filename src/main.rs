@@ -20,18 +20,20 @@ use log::*;
 
 // Networking & Multithreading (tokio)
 use tokio::net::{TcpListener, TcpStream};
-use tokio::sync::{mpsc, watch};
+use tokio::sync::mpsc;
 use tokio_tungstenite::tungstenite::Message;
 use tokio_tungstenite::WebSocketStream;
 
 use quick_protobuf::{BytesReader, MessageRead, Writer};
 
 // Futures
-use futures_util::stream::StreamExt;
-use futures_util::{FutureExt, SinkExt};
+use futures_util::{
+    stream::StreamExt,
+    SinkExt,
+};
 
 // Standard Library imports
-use std::{collections::HashMap, thread, time};
+use std::{collections::HashMap, time};
 
 const PORT: &str = "8080";
 const TICKS_PER_SECOND: u64 = 20; // 20tps gameloop & broadcasting

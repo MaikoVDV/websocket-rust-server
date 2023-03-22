@@ -27,12 +27,19 @@ pub async fn interval_broadcast(mut event_rx: mpsc::UnboundedReceiver<BroadcastE
                     }
                     Some(BroadcastEvents::Quit(id)) => {
                         connections.remove(&id);
-                        info!("Connection lost with client id: {}", id);
+                        info!("Connection lost with client {}", id);
+
+                        let data = proto_serialize(conn_event_messages::ClientDisconnect{client_id: id}, 1);
+                        for (_, conn) in connections.iter_mut() {
+                            //info!("Sending state update to client {}", conn.id);
+                            let _ = conn
+                                .sender
+                                .send(Message::Binary(data.clone()))
+                                .await
+                                .unwrap_or_default();
+                        }
                     }
                     Some(BroadcastEvents::StateUpdateOut(state)) => {
-                        // Received an input from some client,
-                        // But not broadcasting state, because that's not very nice for performance.
-                        // State will be transmitted on tick.
                         let data = proto_serialize(state, 10);
                         for (_, conn) in connections.iter_mut() {
                             //info!("Sending state update to client {}", conn.id);

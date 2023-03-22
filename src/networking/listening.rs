@@ -21,14 +21,17 @@ pub async fn listen(
                 }
                 let header = msg.remove(0);
                 let mut reader = BytesReader::from_bytes(&msg);
-                if header == 1 {
-                    if let Ok(input) = generic_protobufs::ClientInput::from_reader(&mut reader, &msg) {
-                        info!(
-                           "Received the following GameInput from client {}:\nx: {}, y: {}, pressed: {}",
-                           id, input.x, input.y, input.pressed
-                        );
-                        let _ = event_sender.send(GameEvents::Input(id, input));
+                match header {
+                    20 => {
+                        if let Ok(input) = generic_protobufs::ClientInput::from_reader(&mut reader, &msg) {
+                            info!(
+                               "Received the following GameInput from client {}:\nx: {}, y: {}, pressed: {}",
+                               id, input.x, input.y, input.pressed
+                            );
+                            let _ = event_sender.send(GameEvents::Input(id, input));
+                        }
                     }
+                    _ => ()
                 }
             } else if msg.is_close() {
                 break; // When we break, we disconnect.
