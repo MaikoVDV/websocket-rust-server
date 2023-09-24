@@ -17,7 +17,7 @@ tokio = { version = "1.11.0", default-features = false, features = ["io-util", "
 tokio-tungstenite = {version = "0.15.0", default-features = false}
 quick-protobuf = {git="https://github.com/Descrout/quick-protobuf"}
 env_logger = "0.10.0"
-log = "0.4.17"
+log = "0.4.19"
 
 [build-dependencies]
 pb-rs = "0.10.0"

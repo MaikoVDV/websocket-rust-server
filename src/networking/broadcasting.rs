@@ -1,6 +1,7 @@
 use crate::*;
 
-pub async fn interval_broadcast(mut event_rx: mpsc::UnboundedReceiver<BroadcastEvents>) {
+pub async fn interval_broadcast(
+    mut event_rx: mpsc::UnboundedReceiver<BroadcastEvents>) {
     let mut connections: HashMap<u32, Connection> = HashMap::new();
     loop {
         tokio::select! {
